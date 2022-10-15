@@ -5,35 +5,55 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    Rigidbody rb;
-    float horizontal, vertical;
-    float speed = 5f;
-    public Camera cam;
+    public float walkSpeed = 4f;
 
-    // Start is called before the first frame update
+    Vector3 forward, right;
+    private float moveSpeed;
+
+    // Use this for initialization
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+
+        forward = Camera.main.transform.forward;
+        forward.y = 0;
+        forward = Vector3.Normalize(forward);
+
+        right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
+
+        // Initial speed
+        moveSpeed = walkSpeed;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, Vector3.zero);
-        float distance;
-        if (plane.Raycast(ray, out distance))
+
+        // Movement
+        if (Input.anyKey)
         {
-            Vector3 target = ray.GetPoint(distance);
-            Vector3 direction = target - transform.position;
-            float rotation = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, rotation, 0);
+            Move();
         }
+
     }
 
-    void FixedUpdate(){
-        horizontal = Input.GetAxisRaw("Horizontal");
-        vertical = Input.GetAxisRaw("Vertical");
-        rb.velocity = new Vector3(horizontal * speed, rb.velocity.y, vertical * speed);
+    void Move()
+    {
+
+        // Movement speed
+        Vector3 rightMovement = right * moveSpeed * Input.GetAxis("Horizontal");
+        Vector3 upMovement = forward * moveSpeed * Input.GetAxis("Vertical");
+
+        // Calculate what is forward
+        Vector3 heading = Vector3.Normalize(rightMovement + upMovement);
+
+        // Set new position
+        Vector3 newPosition = transform.position;
+        newPosition += rightMovement;
+        newPosition += upMovement;
+
+        // Smoothly move the new position
+        transform.forward = heading;
+        transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime);
     }
 }
