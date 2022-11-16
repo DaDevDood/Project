@@ -6,54 +6,30 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     public float walkSpeed = 4f;
+    Rigidbody rb;
+    Vector3 movement;
 
-    Vector3 forward, right;
-    private float moveSpeed;
 
     // Use this for initialization
     void Start()
     {
-
-        forward = Camera.main.transform.forward;
-        forward.y = 0;
-        forward = Vector3.Normalize(forward);
-
-        right = Quaternion.Euler(new Vector3(0, 90, 0)) * forward;
-
-        // Initial speed
-        moveSpeed = walkSpeed;
-
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        movement.x = Input.GetAxisRaw("Horizontal");
+        movement.z = Input.GetAxisRaw("Vertical");
 
-        // Movement
-        if (Input.anyKey)
-        {
-            Move();
-        }
-
+    }
+    private void FixedUpdate()
+    {
+        Move();
     }
 
     void Move()
     {
-
-        // Movement speed
-        Vector3 rightMovement = right * moveSpeed * Input.GetAxis("Horizontal");
-        Vector3 upMovement = forward * moveSpeed * Input.GetAxis("Vertical");
-
-        // Calculate what is forward
-        Vector3 heading = Vector3.Normalize(rightMovement + upMovement);
-
-        // Set new position
-        Vector3 newPosition = transform.position;
-        newPosition += rightMovement;
-        newPosition += upMovement;
-
-        // Smoothly move the new position
-        transform.forward = heading;
-        transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime);
+        rb.velocity = (new Vector3(movement.x, 0, movement.z)) * walkSpeed * Time.deltaTime;
     }
 }
